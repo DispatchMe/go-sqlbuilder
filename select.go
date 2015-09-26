@@ -42,7 +42,7 @@ func (q *Query) getSelectSQL(cache *varCache) string {
 
 	common := q.getCommonQueryComponents(cache)
 
-	order := []string{"from", "join", "where", "groupBy", "having", "orderBy", "limit", "skip"}
+	order := []string{"from", "join", "where", "groupBy", "having", "orderBy", "limit", "offset"}
 
 	for _, o := range order {
 		if val, ok := common[o]; ok {
@@ -60,7 +60,7 @@ func (q *Query) getCommonQueryComponents(cache *varCache) map[string]string {
 	joinTables := []string{}
 
 	for _, t := range q.tables {
-		if t.joinType == JOIN_NONE {
+		if t.joinType == join_none {
 			fromTables = append(fromTables, t.getSQL(cache))
 		} else {
 			joinTables = append(joinTables, t.getSQL(cache))
@@ -98,9 +98,9 @@ func (q *Query) getCommonQueryComponents(cache *varCache) map[string]string {
 		mp["limit"] = fmt.Sprintf("LIMIT %d", q.limit)
 	}
 
-	// Skip?
-	if q.skip > 0 {
-		mp["skip"] = fmt.Sprintf("SKIP %d", q.skip)
+	// Offset?
+	if q.offset > 0 {
+		mp["offset"] = fmt.Sprintf("OFFSET %d", q.offset)
 	}
 
 	return mp
@@ -109,23 +109,64 @@ func (q *Query) getCommonQueryComponents(cache *varCache) map[string]string {
 // Run a SELECT query
 func Select(fields ...string) *Query {
 	query := newQuery()
-	query.action = ACTION_SELECT
+	query.action = action_select
 
-	return query.selectFields(fields)
+	return query.Select(fields...)
 }
 
-func (q *Query) selectFields(fields []string) *Query {
-	q.fields = fields
+// Select additional fields
+func (q *Query) Select(fields ...string) *Query {
+	q.fields = append(q.fields, fields...)
 	return q
+}
+
+// Alias a subquery with a certain name. Useful when you want to do something like SELECT a.column FROM (SELECT ....) a
+func Alias(subquery *Query, name string) sqlProvider {
+	return &alias{subquery, name}
+}
+
+type alias struct {
+	query sqlProvider
+	name  string
+}
+
+func (a *alias) getSQL(cache *varCache) string {
+	return "(" + a.query.getSQL(cache) + ") " + a.name
 }
 
 // Add a table to SELECT from. Run this multiple times for multiple tables
-func (q *Query) From(tableName string) *Query {
-	q.tables = append(q.tables, &table{
-		name: tableName,
-	})
+func (q *Query) From(tableOrQuery interface{}) *Query {
+	if tableName, ok := tableOrQuery.(string); ok {
+		q.tables = append(q.tables, &table{
+			name: tableName,
+		})
+	} else if provider, ok := tableOrQuery.(sqlProvider); ok {
+		q.tables = append(q.tables, &table{
+			subQuery: provider,
+		})
+	} else {
+		panic("From must be a table name (string) or a subquery!")
+	}
 
 	return q
+}
+
+// Generate a UNION clause of two or more subqueries. This can in turn be used anywhere a subquery can be used, like in FROM or IN clauses
+func Union(subQuery ...sqlProvider) *Query {
+	q := newQuery()
+	q.unions = append(q.unions, subQuery...)
+	q.action = action_union
+	return q
+}
+
+func (q *Query) getUnionSQL(cache *varCache) string {
+	queries := make([]string, len(q.unions))
+
+	for i, u := range q.unions {
+		queries[i] = "(" + u.getSQL(cache) + ")"
+	}
+
+	return strings.Join(queries, " UNION ")
 }
 
 // Add a GROUP BY clause. Use this multiple times for multiple levels of grouping

@@ -5,12 +5,9 @@ import (
 )
 
 type constraint struct {
-	gate            int
-	children        []sqlProvider
-	field           string
-	comparator      string
-	value           interface{}
-	bypassStatement bool
+	gate     int
+	children []sqlProvider
+	expr     sqlProvider
 }
 
 func (c *constraint) getSQL(cache *varCache) string {
@@ -21,7 +18,7 @@ func (c *constraint) getSQL(cache *varCache) string {
 		}
 
 		var gate string
-		if c.gate == GATE_AND {
+		if c.gate == gate_and {
 			gate = " AND "
 		} else {
 			gate = " OR "
@@ -36,18 +33,7 @@ func (c *constraint) getSQL(cache *varCache) string {
 
 		return prefix + strings.Join(compiled, gate) + suffix
 	} else {
-		var key string
-		if c.bypassStatement {
-			var ok bool
-			key, ok = c.value.(string)
-			if !ok {
-				panic("Cannot generate SQL for constraint outside of a statement when the constraint value is not a string!")
-			}
-		} else {
-			key = cache.add(c.value)
-		}
-
-		return c.field + " " + c.comparator + " " + key
+		return c.expr.getSQL(cache)
 	}
 }
 
@@ -55,28 +41,18 @@ func (c *constraint) addChild(child sqlProvider) {
 	c.children = append(c.children, child)
 }
 
-// This is used externally to construct query constraints
-type Expr struct {
-	Field      string
-	Comparator string
-	Value      interface{}
-}
-
-func (expr Expr) getSQL(cache *varCache) string {
-	key := cache.add(expr.Value)
-	return expr.Field + " " + expr.Comparator + " " + key
-}
-
+// Used within a WHERE or HAVING clause to group Expr instances, or nested And/Or functions, in an AND logical gate (all constraints within this function must be true)
 func And(constraints ...sqlProvider) *constraint {
 	return &constraint{
-		gate:     GATE_AND,
+		gate:     gate_and,
 		children: constraints,
 	}
 }
 
+// Used within a WHERE or HAVING clause to group Expr instances, or nested And/Or functions, in an OR logical gate (at least one of the constraints within this function must be true)
 func Or(constraints ...sqlProvider) *constraint {
 	return &constraint{
-		gate:     GATE_OR,
+		gate:     gate_or,
 		children: constraints,
 	}
 }

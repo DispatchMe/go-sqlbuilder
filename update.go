@@ -7,7 +7,7 @@ import (
 // Run an UPDATE query
 func Update(tableName string) *Query {
 	query := newQuery()
-	query.action = ACTION_UPDATE
+	query.action = action_update
 	// Technically does the same thing as From
 	return query.From(tableName)
 }
@@ -29,18 +29,14 @@ func (q *Query) Set(data interface{}) *Query {
 
 func (q *Query) getUpdateSQL(cache *varCache) string {
 
-	clauses := make([]string, len(q.data))
+	clauses := make([]string, len(q.data.keys))
 	i := 0
-	for k, d := range q.data {
-		clauses[i] = k + "=" + cache.add(d)
-		i++
-	}
 
-	// Make sure there's only one table and it is JOIN_NONE
-	if len(q.tables) != 1 {
-		panic("Cannot run INSERT on multiple tables!")
-	} else if q.tables[0].joinType != JOIN_NONE {
-		panic("Cannot run INSERT on table with join type")
+	q.data.rewind()
+	for q.data.hasNext() {
+		key, val := q.data.getNext()
+		clauses[i] = key + "=" + cache.add(val)
+		i++
 	}
 
 	components := []string{"UPDATE"}
@@ -49,7 +45,7 @@ func (q *Query) getUpdateSQL(cache *varCache) string {
 
 	common["set"] = "SET " + strings.Join(clauses, ", ")
 
-	order := []string{"from", "join", "set", "where", "groupBy", "having", "orderBy", "limit", "skip"}
+	order := []string{"from", "join", "set", "where", "groupBy", "having", "orderBy", "limit", "offset"}
 
 	for _, o := range order {
 		if val, ok := common[o]; ok {

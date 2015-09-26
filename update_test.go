@@ -1,9 +1,23 @@
 package sqlbuilder
 
 import (
+	"fmt"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
+
+// Run UPDATE using a struct. The `db` tags designate alternate column names; otherwise the verbatim struct property will be used. In this case "Age" is the interpreted column name because that property has no `db` tag. Note that Update.Set also supports maps with string keys as its first argument, but because map output is random, it is impossible to test against an expected output (the order of keys is random, but the order of returned variables will always match the order of the keys)
+func ExampleUpdate_struct() {
+	type Person struct {
+		FirstName string `db:"first_name"`
+		LastName  string `db:"last_name"`
+		Age       int
+	}
+	sql, vars := Update("people").Set(&Person{"Testy", "McGee", 25}).Where(Equal{"first_name", "Joe"}).Limit(1).GetSQL()
+
+	fmt.Println(sql, ",", vars)
+	// Output: UPDATE people SET first_name=$1, last_name=$2, Age=$3 WHERE first_name = $4 LIMIT 1 , [Testy McGee 25 Joe]
+}
 
 func TestUpdate(t *testing.T) {
 	data := map[string]interface{}{
@@ -12,7 +26,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	Convey("update", t, func() {
-		query, vars := Update("people").Set(data).Where(Expr{"id", "=", 100}).Limit(1).GetSQL()
+		query, vars := Update("people").Set(data).Where(Equal{"id", 100}).Limit(1).GetSQL()
 
 		So(len(vars), ShouldEqual, 3)
 		// Problem here is map output is random, so we need to allow for both possibilities

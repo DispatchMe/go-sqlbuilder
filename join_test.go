@@ -11,7 +11,7 @@ func TestJoins(t *testing.T) {
 		Convey("single constraint", func() {
 			query := Select("*")
 
-			query.Join(JOIN_INNER, "foos AS foobees", OnColumn("bars.foo_id", "=", "foos.id"))
+			query.InnerJoin("foos AS foobees", OnColumn("bars.foo_id", "foos.id"))
 
 			So(len(query.tables), ShouldEqual, 1)
 			So(query.tables[0].getSQL(cache), ShouldEqual, `INNER JOIN foos AS foobees ON bars.foo_id = foos.id`)
@@ -20,10 +20,10 @@ func TestJoins(t *testing.T) {
 		Convey("multiple constraints", func() {
 			query := Select("*")
 
-			query.Join(JOIN_INNER, "foos AS foobees", OnColumn("bars.foo_id", "=", "foos.id"), OnValue("foos.doop", "=", "foop"))
+			query.LeftJoin("foos AS foobees", OnColumn("bars.foo_id", "foos.id"), OnExpression(Equal{"foos.doop", "foop"}))
 
 			So(len(query.tables), ShouldEqual, 1)
-			So(query.tables[0].getSQL(cache), ShouldEqual, `INNER JOIN foos AS foobees ON bars.foo_id = foos.id AND ON foos.doop = $1`)
+			So(query.tables[0].getSQL(cache), ShouldEqual, `LEFT JOIN foos AS foobees ON bars.foo_id = foos.id AND foos.doop = $1`)
 			So(cache.vars[0], ShouldEqual, "foop")
 		})
 	})

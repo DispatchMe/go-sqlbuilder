@@ -4,9 +4,10 @@ import (
 	"strings"
 )
 
+// Run a DELETE query
 func Delete() *Query {
 	query := newQuery()
-	query.action = ACTION_DELETE
+	query.action = action_delete
 
 	return query
 }
@@ -16,7 +17,7 @@ func (q *Query) getDeleteSQL(cache *varCache) string {
 
 	common := q.getCommonQueryComponents(cache)
 
-	order := []string{"from", "join", "where", "groupBy", "having", "orderBy", "limit", "skip"}
+	order := []string{"from", "join", "where", "groupBy", "having", "orderBy", "limit", "offset"}
 
 	for _, o := range order {
 		if val, ok := common[o]; ok {

@@ -17,34 +17,48 @@ func Insert(data interface{}) *Query {
 	}
 
 	query.data = formatted
-	query.action = ACTION_INSERT
+	query.action = action_insert
 	return query
 
 }
 
-// Set the table to insert into
+// Set the table to insert into. Can be just the table name, or the table name plus the alias, e.g. `Into("foos AS bars")`
 func (q *Query) Into(tableName string) *Query {
 	// Technically does the same thing as From
 	return q.From(tableName)
 }
 
-func (q *Query) getInsertSQL(cache *varCache) string {
-	keys := make([]string, len(q.data))
+func (q *Query) Returning(expr string) *Query {
+	q.returning = expr
+	return q
+}
 
-	fields := make([]string, len(q.data))
+func (q *Query) getInsertSQL(cache *varCache) string {
+	keys := make([]string, len(q.data.keys))
+
+	fields := make([]string, len(q.data.keys))
 
 	i := 0
-	for k, d := range q.data {
-		keys[i] = cache.add(d)
-		fields[i] = k
+	q.data.rewind()
+	for q.data.hasNext() {
+		key, val := q.data.getNext()
+		keys[i] = cache.add(val)
+		fields[i] = key
 		i++
 	}
 
-	// Make sure there's only one table and it is JOIN_NONE
+	// Make sure there's only one table and it is join_none
 	if len(q.tables) != 1 {
 		panic("Cannot run INSERT on multiple tables!")
-	} else if q.tables[0].joinType != JOIN_NONE {
+	} else if q.tables[0].joinType != join_none {
 		panic("Cannot run INSERT on table with join type")
 	}
-	return fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", q.tables[0].name, strings.Join(fields, ", "), strings.Join(keys, ", "))
+
+	suffix := ""
+
+	if q.returning != "" {
+		suffix = " RETURNING " + q.returning
+	}
+
+	return fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", q.tables[0].name, strings.Join(fields, ", "), strings.Join(keys, ", ")) + suffix
 }

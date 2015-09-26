@@ -8,34 +8,13 @@ import (
 func TestConstraints(t *testing.T) {
 	Convey("Constraints SQL generation", t, func() {
 		cache := &varCache{}
-		Convey("basic usage", func() {
-			c := &constraint{
-				field:      "foo",
-				comparator: "=",
-				value:      10,
-			}
-
-			sql := c.getSQL(cache)
-			So(sql, ShouldEqual, "foo = $1")
-			So(len(cache.vars), ShouldEqual, 1)
-			So(cache.vars[0], ShouldEqual, 10)
-		})
 
 		Convey("and combined", func() {
 			c := new(constraint)
-			c.gate = GATE_AND
+			c.gate = gate_and
 
-			c.addChild(&constraint{
-				field:      "foo",
-				comparator: "=",
-				value:      10,
-			})
-			c.addChild(&constraint{
-				field:      "bar",
-				comparator: "=",
-				value:      "bar",
-			})
-
+			c.addChild(Equal{"foo", 10})
+			c.addChild(Equal{"bar", "bar"})
 			sql := c.getSQL(cache)
 			So(sql, ShouldEqual, `(foo = $1 AND bar = $2)`)
 			So(len(cache.vars), ShouldEqual, 2)
@@ -46,17 +25,9 @@ func TestConstraints(t *testing.T) {
 
 		Convey("or combined", func() {
 			c := new(constraint)
-			c.gate = GATE_OR
-			c.addChild(&constraint{
-				field:      "foo",
-				comparator: "=",
-				value:      10,
-			})
-			c.addChild(&constraint{
-				field:      "bar",
-				comparator: "=",
-				value:      "bar",
-			})
+			c.gate = gate_or
+			c.addChild(Equal{"foo", 10})
+			c.addChild(Equal{"bar", "bar"})
 
 			sql := c.getSQL(cache)
 			So(sql, ShouldEqual, `(foo = $1 OR bar = $2)`)
@@ -67,27 +38,15 @@ func TestConstraints(t *testing.T) {
 
 		Convey("complex", func() {
 			c := new(constraint)
-			c.gate = GATE_OR
+			c.gate = gate_or
 
 			c.children = []sqlProvider{
+				Equal{"foo", 10},
 				&constraint{
-					field:      "foo",
-					comparator: "=",
-					value:      10,
-				},
-				&constraint{
-					gate: GATE_AND,
+					gate: gate_and,
 					children: []sqlProvider{
-						&constraint{
-							field:      "bar",
-							comparator: "=",
-							value:      "bar",
-						},
-						&constraint{
-							field:      "baz",
-							comparator: "=",
-							value:      "baz",
-						},
+						Equal{"bar", "bar"},
+						Equal{"baz", "baz"},
 					},
 				},
 			}
