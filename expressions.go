@@ -99,7 +99,7 @@ func getInKeys(val interface{}, cache *varCache) string {
 
 }
 
-// "IN" expression. "field IN (values...)". Values must be a slice, otherwise this function will panic.
+// "IN" expression. "field IN (values...)". Values must be a slice or a subquery, otherwise this function will panic.
 type In struct {
 	Field string
 	Value interface{}
@@ -109,7 +109,7 @@ func (e In) getSQL(cache *varCache) string {
 	return e.Field + " IN (" + getInKeys(e.Value, cache) + ")"
 }
 
-// "NOT IN" expression. "field NOT IN (values...)". Values must be a slice, otherwise this function will panic.
+// "NOT IN" expression. "field NOT IN (values...)". Values must be a slice or a subquery, otherwise this function will panic.
 type NotIn struct {
 	Field string
 	Value interface{}
