@@ -62,6 +62,13 @@ func TestSelect(t *testing.T) {
 		{"multiple joins", Select("*").From("games").InnerJoin("drives", OnColumn("drives.game_id", "games.id")).InnerJoin("plays", OnColumn("plays.drive_id", "drives.id")), "SELECT * FROM games INNER JOIN drives ON drives.game_id = games.id INNER JOIN plays ON plays.drive_id = drives.id", nil},
 		{"everything", Select("COUNT(plays)", "players.name").From("players").InnerJoin("play_player", OnColumn("players.id", "play_player.player_id")).InnerJoin("plays", OnColumn("plays.id", "play_player.play_id")).Where(Or(GreaterThan{"plays.yards", 10}, Equal{"plays.scoring", true})).GroupBy("players.id").Having(GreaterThan{"COUNT(plays)", 5}).OrderBy("players.name", ASC).Limit(10).Offset(50), "SELECT COUNT(plays), players.name FROM players INNER JOIN play_player ON players.id = play_player.player_id INNER JOIN plays ON plays.id = play_player.play_id WHERE (plays.yards > $1 OR plays.scoring = $2) GROUP BY players.id HAVING COUNT(plays) > $3 ORDER BY players.name ASC LIMIT 10 OFFSET 50", []interface{}{10, true, 5}},
 		{"unions", Select("foo").From(Alias(Union(Select("foo").From("table1"), Select("foo").From("table2")), "u")), "SELECT foo FROM ((SELECT foo FROM table1) UNION (SELECT foo FROM table2)) u", nil},
+		{"case", Select("foo").From("bar").Where(
+			Case(
+				When(Equal{"foo", "bar"}).Then(Equal{"boop", "baz"}),
+				When(Equal{"foo", "baz"}).Then(Equal{"boop", "foop"}),
+				Else(Equal{"boop", "loop"}),
+			),
+		), "SELECT foo FROM bar WHERE (CASE WHEN foo = $1 THEN boop = $2 WHEN foo = $3 THEN boop = $4 ELSE boop = $5 END)", []interface{}{"bar", "baz", "baz", "foop", "loop"}},
 	}
 
 	Convey("Select queries", t, func() {
