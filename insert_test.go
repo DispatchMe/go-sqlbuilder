@@ -22,10 +22,10 @@ func ExampleInsert_struct() {
 func TestInsert(t *testing.T) {
 	person := &Person{10, "Testy", "12345"}
 	Convey("insert", t, func() {
-		query, vars := Insert(person).Into("people").GetSQL()
+		query, vars := Insert(person).Into("people").Returning(`"id"`).GetSQL()
 
 		So(len(vars), ShouldEqual, 3)
-		So(query, ShouldEqual, "INSERT INTO people (id, first_name, Birthday) VALUES ($1, $2, $3)")
+		So(query, ShouldEqual, `INSERT INTO people (id, first_name, Birthday) VALUES ($1, $2, $3) RETURNING "id"`)
 		So(vars[0], ShouldEqual, 10)
 		So(vars[1], ShouldEqual, "Testy")
 		So(vars[2], ShouldEqual, "12345")
