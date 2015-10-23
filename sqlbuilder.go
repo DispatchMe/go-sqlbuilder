@@ -115,3 +115,15 @@ func (q *Query) ExecRead(db *sql.DB) (*sql.Rows, error) {
 	sql, vars := q.GetSQL()
 	return db.Query(sql, vars...)
 }
+
+func (q *Query) GetValue(db *sql.DB, val interface{}) error {
+	results, err := q.ExecRead(db)
+	if err != nil {
+		return err
+	}
+
+	defer results.Close()
+	results.Next()
+	err = results.Scan(val)
+	return err
+}
