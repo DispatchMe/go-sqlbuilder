@@ -1,6 +1,6 @@
 This is a SQL query bulder inspired by my PHP days, specifically [FuelPHP's query builder](http://fuelphp.com/docs/classes/database/usage.html). It is meant for use with PostgreSQL but should also be fine with MySQL.
 
-Please see the [godoc](http://godoc.org/jraede/go-sql-builder) for the complete documentation.
+Please see the [godoc](http://godoc.org/github.com/jraede/go-sqlbuilder) for the complete documentation.
 
 ## Heres a teaser:
 
