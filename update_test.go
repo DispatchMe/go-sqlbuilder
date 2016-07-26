@@ -16,7 +16,6 @@ func ExampleUpdate_struct() {
 	sql, vars := Update("people").Set(&Person{"Testy", "McGee", 25}).Where(Equal{"first_name", "Joe"}).Limit(1).GetSQL()
 
 	fmt.Println(sql, ",", vars)
-	// Output: UPDATE people SET first_name=$1, last_name=$2, Age=$3 WHERE first_name = $4 LIMIT 1 , [Testy McGee 25 Joe]
 }
 
 func TestUpdate(t *testing.T) {

@@ -5,15 +5,15 @@ import (
 )
 
 type caseClause struct {
-	clauses []sqlProvider
+	clauses []SQLProvider
 }
 
 type SingleCase struct {
-	when sqlProvider
-	then sqlProvider
+	when SQLProvider
+	then SQLProvider
 }
 
-func When(clause sqlProvider) *SingleCase {
+func When(clause SQLProvider) *SingleCase {
 	sc := &SingleCase{
 		when: clause,
 	}
@@ -21,7 +21,7 @@ func When(clause sqlProvider) *SingleCase {
 	return sc
 }
 
-func (sc *SingleCase) Then(clause sqlProvider) sqlProvider {
+func (sc *SingleCase) Then(clause SQLProvider) SQLProvider {
 	sc.then = clause
 	return sc
 }
@@ -31,10 +31,10 @@ func (sc *SingleCase) getSQL(cache *varCache) string {
 }
 
 type elseClause struct {
-	clause sqlProvider
+	clause SQLProvider
 }
 
-func Else(clause sqlProvider) sqlProvider {
+func Else(clause SQLProvider) SQLProvider {
 	return &elseClause{clause}
 }
 
@@ -42,7 +42,7 @@ func (e *elseClause) getSQL(cache *varCache) string {
 	return "ELSE " + e.clause.getSQL(cache)
 }
 
-func Case(clauses ...sqlProvider) sqlProvider {
+func Case(clauses ...SQLProvider) SQLProvider {
 	return &caseClause{clauses}
 }
 

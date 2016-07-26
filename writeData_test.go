@@ -19,14 +19,10 @@ func TestGetData(t *testing.T) {
 			data, err := getData(person)
 			So(err, ShouldBeNil)
 
-			So(len(data.keys), ShouldEqual, 3)
-			So(data.data["id"], ShouldEqual, 10)
-			So(data.data["first_name"], ShouldEqual, "Testy")
-			So(data.data["Birthday"], ShouldEqual, "1/1/1988")
-
-			So(data.keys[0], ShouldEqual, "id")
-			So(data.keys[1], ShouldEqual, "first_name")
-			So(data.keys[2], ShouldEqual, "Birthday")
+			So(len(data), ShouldEqual, 3)
+			So(data["id"], ShouldEqual, 10)
+			So(data["first_name"], ShouldEqual, "Testy")
+			So(data["Birthday"], ShouldEqual, "1/1/1988")
 		})
 
 		Convey("success - map", func() {
@@ -38,10 +34,10 @@ func TestGetData(t *testing.T) {
 
 			So(err, ShouldBeNil)
 
-			So(len(data.keys), ShouldEqual, 3)
-			So(data.data["a"], ShouldEqual, 1)
-			So(data.data["b"], ShouldEqual, 2)
-			So(data.data["c"], ShouldEqual, 3)
+			So(len(data), ShouldEqual, 3)
+			So(data["a"], ShouldEqual, 1)
+			So(data["b"], ShouldEqual, 2)
+			So(data["c"], ShouldEqual, 3)
 
 			// We explicitly cannot test the order because that's the nature of go maps
 		})

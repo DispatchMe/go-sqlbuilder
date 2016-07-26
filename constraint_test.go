@@ -40,11 +40,11 @@ func TestConstraints(t *testing.T) {
 			c := new(constraint)
 			c.gate = gate_or
 
-			c.children = []sqlProvider{
+			c.children = []SQLProvider{
 				Equal{"foo", 10},
 				&constraint{
 					gate: gate_and,
-					children: []sqlProvider{
+					children: []SQLProvider{
 						Equal{"bar", "bar"},
 						Equal{"baz", "baz"},
 					},

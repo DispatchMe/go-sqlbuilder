@@ -6,8 +6,8 @@ import (
 
 type constraint struct {
 	gate     int
-	children []sqlProvider
-	expr     sqlProvider
+	children []SQLProvider
+	expr     SQLProvider
 }
 
 func (c *constraint) getSQL(cache *varCache) string {
@@ -37,12 +37,12 @@ func (c *constraint) getSQL(cache *varCache) string {
 	}
 }
 
-func (c *constraint) addChild(child sqlProvider) {
+func (c *constraint) addChild(child SQLProvider) {
 	c.children = append(c.children, child)
 }
 
 // Used within a WHERE or HAVING clause to group Expr instances, or nested And/Or functions, in an AND logical gate (all constraints within this function must be true)
-func And(constraints ...sqlProvider) *constraint {
+func And(constraints ...SQLProvider) *constraint {
 	return &constraint{
 		gate:     gate_and,
 		children: constraints,
@@ -50,7 +50,7 @@ func And(constraints ...sqlProvider) *constraint {
 }
 
 // Used within a WHERE or HAVING clause to group Expr instances, or nested And/Or functions, in an OR logical gate (at least one of the constraints within this function must be true)
-func Or(constraints ...sqlProvider) *constraint {
+func Or(constraints ...SQLProvider) *constraint {
 	return &constraint{
 		gate:     gate_or,
 		children: constraints,

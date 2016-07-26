@@ -26,5 +26,14 @@ func TestJoins(t *testing.T) {
 			So(query.tables[0].getSQL(cache), ShouldEqual, `LEFT JOIN foos AS foobees ON bars.foo_id = foos.id AND foos.doop = $1`)
 			So(cache.vars[0], ShouldEqual, "foop")
 		})
+
+		Convey("Lazy join", func() {
+			query := Select("*")
+
+			query.LazyInnerJoin("foos AS foobees", OnColumn("bars.foo_id", "foos.id"))
+			query.LazyInnerJoin("foos AS foobees", OnColumn("bars.foo_id", "foos.id"))
+
+			So(len(query.tables), ShouldEqual, 1)
+		})
 	})
 }

@@ -16,7 +16,6 @@ func ExampleInsert_struct() {
 	sql, vars := Insert(&Person{"Testy", "McGee", 25}).Into("people").GetSQL()
 
 	fmt.Println(sql, ",", vars)
-	// Output: INSERT INTO people (first_name, last_name, Age) VALUES ($1, $2, $3) , [Testy McGee 25]
 }
 
 func TestInsert(t *testing.T) {
@@ -25,9 +24,21 @@ func TestInsert(t *testing.T) {
 		query, vars := Insert(person).Into("people").Returning(`"id"`).GetSQL()
 
 		So(len(vars), ShouldEqual, 3)
-		So(query, ShouldEqual, `INSERT INTO people (id, first_name, Birthday) VALUES ($1, $2, $3) RETURNING "id"`)
-		So(vars[0], ShouldEqual, 10)
-		So(vars[1], ShouldEqual, "Testy")
-		So(vars[2], ShouldEqual, "12345")
+
+		// Could be one of three options here...
+
+		options := []string{
+			`INSERT INTO people (id, first_name, Birthday) VALUES ($1, $2, $3) RETURNING "id"`,
+			`INSERT INTO people (id, Birthday, first_name) VALUES ($1, $2, $3) RETURNING "id"`,
+			`INSERT INTO people (first_name, id, Birthday) VALUES ($1, $2, $3) RETURNING "id"`,
+			`INSERT INTO people (first_name, Birthday, id) VALUES ($1, $2, $3) RETURNING "id"`,
+			`INSERT INTO people (Birthday, first_name, id) VALUES ($1, $2, $3) RETURNING "id"`,
+			`INSERT INTO people (Birthday, id, first_name) VALUES ($1, $2, $3) RETURNING "id"`,
+		}
+
+		So(options, ShouldContain, query)
+		So(vars, ShouldContain, 10)
+		So(vars, ShouldContain, "Testy")
+		So(vars, ShouldContain, "12345")
 	})
 }

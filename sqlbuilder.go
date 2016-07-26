@@ -5,6 +5,7 @@ package sqlbuilder
 import (
 	"database/sql"
 	"fmt"
+	sqlx "github.com/jmoiron/sqlx"
 )
 
 const (
@@ -37,14 +38,14 @@ type Query struct {
 	where     *constraint
 	groups    groups
 	ordering  ordering
-	data      *orderedMap
+	data      map[string]interface{}
 	limit     int
 	offset    int
 	returning string
-	unions    []sqlProvider
+	unions    []SQLProvider
 }
 
-type sqlProvider interface {
+type SQLProvider interface {
 	getSQL(cache *varCache) string
 }
 
@@ -84,7 +85,7 @@ func (q *Query) GetSQL() (string, []interface{}) {
 	return q.getSQL(cache), cache.vars
 }
 
-// This satisfies the sqlProvider interface so we can use subqueries
+// This satisfies the SQLProvider interface so we can use subqueries
 func (q *Query) getSQL(cache *varCache) string {
 	var sql string
 
@@ -104,19 +105,20 @@ func (q *Query) getSQL(cache *varCache) string {
 }
 
 // Execute a write query (INSERT/UPDATE/DELETE) on a given SQL database
-func (q *Query) ExecWrite(db *sql.DB) (sql.Result, error) {
+func (q *Query) ExecWrite(db *sqlx.DB) (sql.Result, error) {
 	sql, vars := q.GetSQL()
 
 	return db.Exec(sql, vars...)
 }
 
 // Execute a read query (SELECT) on a given SQL database
-func (q *Query) ExecRead(db *sql.DB) (*sql.Rows, error) {
+func (q *Query) ExecRead(db *sqlx.DB) (*sqlx.Rows, error) {
 	sql, vars := q.GetSQL()
-	return db.Query(sql, vars...)
+
+	return db.Queryx(sql, vars...)
 }
 
-func (q *Query) GetValue(db *sql.DB, val interface{}) error {
+func (q *Query) GetValue(db *sqlx.DB, val interface{}) error {
 	results, err := q.ExecRead(db)
 	if err != nil {
 		return err

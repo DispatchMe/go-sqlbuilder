@@ -121,12 +121,12 @@ func (q *Query) Select(fields ...string) *Query {
 }
 
 // Alias a subquery with a certain name. Useful when you want to do something like SELECT a.column FROM (SELECT ....) a
-func Alias(subquery *Query, name string) sqlProvider {
+func Alias(subquery *Query, name string) SQLProvider {
 	return &alias{subquery, name}
 }
 
 type alias struct {
-	query sqlProvider
+	query SQLProvider
 	name  string
 }
 
@@ -140,7 +140,7 @@ func (q *Query) From(tableOrQuery interface{}) *Query {
 		q.tables = append(q.tables, &table{
 			name: tableName,
 		})
-	} else if provider, ok := tableOrQuery.(sqlProvider); ok {
+	} else if provider, ok := tableOrQuery.(SQLProvider); ok {
 		q.tables = append(q.tables, &table{
 			subQuery: provider,
 		})
@@ -152,7 +152,7 @@ func (q *Query) From(tableOrQuery interface{}) *Query {
 }
 
 // Generate a UNION clause of two or more subqueries. This can in turn be used anywhere a subquery can be used, like in FROM or IN clauses
-func Union(subQuery ...sqlProvider) *Query {
+func Union(subQuery ...SQLProvider) *Query {
 	q := newQuery()
 	q.unions = append(q.unions, subQuery...)
 	q.action = action_union

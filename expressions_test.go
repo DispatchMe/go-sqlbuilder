@@ -7,7 +7,7 @@ import (
 
 type exprParam struct {
 	name     string
-	expr     sqlProvider
+	expr     SQLProvider
 	expected string
 	vars     []interface{}
 }

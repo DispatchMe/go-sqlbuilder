@@ -34,14 +34,13 @@ func (q *Query) Returning(expr string) *Query {
 }
 
 func (q *Query) getInsertSQL(cache *varCache) string {
-	keys := make([]string, len(q.data.keys))
+	keys := make([]string, len(q.data))
 
-	fields := make([]string, len(q.data.keys))
+	fields := make([]string, len(q.data))
 
 	i := 0
-	q.data.rewind()
-	for q.data.hasNext() {
-		key, val := q.data.getNext()
+
+	for key, val := range q.data {
 		keys[i] = cache.add(val)
 		fields[i] = key
 		i++

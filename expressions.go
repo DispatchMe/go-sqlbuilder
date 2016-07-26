@@ -12,7 +12,7 @@ type Equal struct {
 }
 
 func getSQLFromInterface(cache *varCache, i interface{}) string {
-	if provider, ok := i.(sqlProvider); ok {
+	if provider, ok := i.(SQLProvider); ok {
 		return "(" + provider.getSQL(cache) + ")"
 	} else {
 		return cache.add(i)
@@ -74,7 +74,7 @@ func (e LessOrEqual) getSQL(cache *varCache) string {
 }
 
 func getInKeys(val interface{}, cache *varCache) string {
-	if provider, ok := val.(sqlProvider); ok {
+	if provider, ok := val.(SQLProvider); ok {
 		return provider.getSQL(cache)
 	}
 	// Make sure value is a slice

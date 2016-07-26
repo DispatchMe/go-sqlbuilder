@@ -29,12 +29,10 @@ func (q *Query) Set(data interface{}) *Query {
 
 func (q *Query) getUpdateSQL(cache *varCache) string {
 
-	clauses := make([]string, len(q.data.keys))
+	clauses := make([]string, len(q.data))
 	i := 0
 
-	q.data.rewind()
-	for q.data.hasNext() {
-		key, val := q.data.getNext()
+	for key, val := range q.data {
 		clauses[i] = key + "=" + cache.add(val)
 		i++
 	}
