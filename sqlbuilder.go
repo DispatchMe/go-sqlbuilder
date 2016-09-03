@@ -118,6 +118,12 @@ func (q *Query) ExecRead(db *sqlx.DB) (*sqlx.Rows, error) {
 	return db.Queryx(sql, vars...)
 }
 
+func (q *Query) GetResult(db *sqlx.DB, result interface{}) error {
+	sql, vars := q.GetSQL()
+
+	return db.Get(result, sql, vars...)
+}
+
 func (q *Query) GetValue(db *sqlx.DB, val interface{}) error {
 	results, err := q.ExecRead(db)
 	if err != nil {
