@@ -6,7 +6,10 @@ import (
 	"database/sql"
 	"fmt"
 	sqlx "github.com/jmoiron/sqlx"
+	"github.com/visionmedia/go-debug"
 )
+
+var Debug = debug.Debug("sql")
 
 const (
 	gate_and = iota
@@ -107,20 +110,20 @@ func (q *Query) getSQL(cache *varCache) string {
 // Execute a write query (INSERT/UPDATE/DELETE) on a given SQL database
 func (q *Query) ExecWrite(db *sqlx.DB) (sql.Result, error) {
 	sql, vars := q.GetSQL()
-
+	Debug(sql)
 	return db.Exec(sql, vars...)
 }
 
 // Execute a read query (SELECT) on a given SQL database
 func (q *Query) ExecRead(db *sqlx.DB) (*sqlx.Rows, error) {
 	sql, vars := q.GetSQL()
-
+	Debug(sql)
 	return db.Queryx(sql, vars...)
 }
 
 func (q *Query) GetResult(db *sqlx.DB, result interface{}) error {
 	sql, vars := q.GetSQL()
-
+	Debug(sql)
 	return db.Get(result, sql, vars...)
 }
 
