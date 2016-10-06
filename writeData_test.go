@@ -9,20 +9,22 @@ type Person struct {
 	ID        int64  `db:"id"`
 	FirstName string `db:"first_name"`
 	Birthday  string
+	Pointer   *int `db:"pointer"`
 }
 
 func TestGetData(t *testing.T) {
-	person := &Person{10, "Testy", "1/1/1988"}
+	person := &Person{10, "Testy", "1/1/1988", nil}
 
 	Convey("getData", t, func() {
 		Convey("success - struct", func() {
 			data, err := getData(person)
 			So(err, ShouldBeNil)
 
-			So(len(data), ShouldEqual, 3)
+			So(len(data), ShouldEqual, 4)
 			So(data["id"], ShouldEqual, 10)
 			So(data["first_name"], ShouldEqual, "Testy")
 			So(data["Birthday"], ShouldEqual, "1/1/1988")
+			So(data["pointer"], ShouldBeNil)
 		})
 
 		Convey("success - map", func() {

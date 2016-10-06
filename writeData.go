@@ -2,7 +2,7 @@ package sqlbuilder
 
 import (
 	"errors"
-	"github.com/jmoiron/sqlx/reflectx"
+	"github.com/fatih/structs"
 	"reflect"
 	"strings"
 )
@@ -29,20 +29,21 @@ func getData(data interface{}) (map[string]interface{}, error) {
 		}
 		return mp, nil
 	} else if t.Kind() == reflect.Struct {
-		mapper := reflectx.NewMapperFunc("db", func(s string) string {
-			return s
-		})
+		fields := structs.Fields(data)
 
-		fields := mapper.FieldMap(reflect.ValueOf(data))
-
-		// ReflectX returns nested structs. Remove any with a dot, since those are nested properties
-		for fieldName, fieldValue := range fields {
-			if strings.Contains(fieldName, ".") {
-				continue
+		for _, f := range fields {
+			tag := f.Tag("db")
+			if strings.Contains(tag, ",") {
+				tag = strings.Split(tag, ",")[0]
 			}
-			mp[fieldName] = fieldValue.Interface()
-		}
 
+			if tag == "" {
+				tag = f.Name()
+			}
+
+			mp[tag] = f.Value()
+
+		}
 		return mp, nil
 
 	} else {

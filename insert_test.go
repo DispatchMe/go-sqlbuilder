@@ -19,7 +19,7 @@ func ExampleInsert_struct() {
 }
 
 func TestInsert(t *testing.T) {
-	person := &Person{10, "Testy", "12345"}
+	person := &Person{10, "Testy", "12345", nil}
 	Convey("insert", t, func() {
 		query, vars := Insert(person).Into("people").Returning(`"id"`).GetSQL()
 
