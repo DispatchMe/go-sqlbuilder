@@ -154,6 +154,11 @@ func (q *Query) GetValue(db *sqlx.DB, val interface{}) error {
 
 	defer results.Close()
 	results.Next()
+	err = results.Err()
+	if err != nil {
+		return err
+	}
+
 	err = results.Scan(val)
 	return err
 }
