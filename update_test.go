@@ -13,7 +13,7 @@ func ExampleUpdate_struct() {
 		LastName  string `db:"last_name"`
 		Age       int
 	}
-	sql, vars := Update("people").Set(&Person{"Testy", "McGee", 25}).Where(Equal{"first_name", "Joe"}).Limit(1).GetSQL()
+	sql, vars := Update("people").Set(&Person{"Testy", "McGee", 25}).Where(Equal{"first_name", "Joe"}).Limit(1).GetFullSQL()
 
 	fmt.Println(sql, ",", vars)
 }
@@ -25,7 +25,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	Convey("update", t, func() {
-		query, vars := Update("people").Set(data).Where(Equal{"id", 100}).Limit(1).GetSQL()
+		query, vars := Update("people").Set(data).Where(Equal{"id", 100}).Limit(1).GetFullSQL()
 
 		So(len(vars), ShouldEqual, 3)
 		// Problem here is map output is random, so we need to allow for both possibilities

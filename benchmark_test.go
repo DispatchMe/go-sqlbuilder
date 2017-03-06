@@ -17,7 +17,7 @@ func BenchmarkSelectBasic(b *testing.B) {
 				GreaterThan{"age", 90},
 				LessThan{"age", 10},
 			),
-		).OrderBy("last_name", ASC).Limit(20).GetSQL()
+		).OrderBy("last_name", ASC).Limit(20).GetFullSQL()
 	}
 }
 
@@ -33,7 +33,7 @@ func BenchmarkSelectComplex(b *testing.B) {
 				GreaterThan{"plays.yards", 10},
 				Equal{"plays.scoring", true},
 			),
-		).GroupBy("players.id").Having(GreaterThan{"COUNT(plays)", 5}).OrderBy("playcount", DESC).Limit(10).Offset(50).GetSQL()
+		).GroupBy("players.id").Having(GreaterThan{"COUNT(plays)", 5}).OrderBy("playcount", DESC).Limit(10).Offset(50).GetFullSQL()
 	}
 }
 

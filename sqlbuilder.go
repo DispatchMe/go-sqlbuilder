@@ -35,13 +35,14 @@ const (
 	action_update = iota
 	action_delete = iota
 	action_union  = iota
+	action_count  = iota
 )
 
 type Query struct {
 	action    int
 	fields    []string
 	tables    []*table
-	cache     *varCache
+	cache     *VarCache
 	having    *constraint
 	where     *constraint
 	groups    groups
@@ -54,14 +55,14 @@ type Query struct {
 }
 
 type SQLProvider interface {
-	getSQL(cache *varCache) string
+	GetSQL(cache *VarCache) string
 }
 
-type varCache struct {
+type VarCache struct {
 	vars []interface{}
 }
 
-func (v *varCache) add(val interface{}) string {
+func (v *VarCache) add(val interface{}) string {
 	v.vars = append(v.vars, val)
 	return fmt.Sprintf("$%d", len(v.vars))
 }
@@ -83,18 +84,18 @@ func (q *Query) Offset(offset int) *Query {
 
 func newQuery() *Query {
 	q := new(Query)
-	q.cache = new(varCache)
+	q.cache = new(VarCache)
 	return q
 }
 
 // Generate the SQL for this query. Returns the generated SQL (string), and a slice of arbitrary values to pass to sql.DB.Exec or sql.DB.Query
-func (q *Query) GetSQL() (string, []interface{}) {
-	cache := &varCache{}
-	return q.getSQL(cache), cache.vars
+func (q *Query) GetFullSQL() (string, []interface{}) {
+	cache := &VarCache{}
+	return q.GetSQL(cache), cache.vars
 }
 
 // This satisfies the SQLProvider interface so we can use subqueries
-func (q *Query) getSQL(cache *varCache) string {
+func (q *Query) GetSQL(cache *VarCache) string {
 	var sql string
 
 	switch q.action {
@@ -108,13 +109,29 @@ func (q *Query) getSQL(cache *varCache) string {
 		sql = q.getDeleteSQL(cache)
 	case action_union:
 		sql = q.getUnionSQL(cache)
+	case action_count:
+		sql = q.getCountSQL(cache)
 	}
 	return sql
 }
 
+func (q *Query) GetCount(db *sqlx.DB) (int, error) {
+	var count int
+	prevAction := q.action
+	q.action = action_count
+	defer func() {
+		q.action = prevAction
+	}()
+	err := q.GetValue(db, &count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // Execute a write query (INSERT/UPDATE/DELETE) on a given SQL database
 func (q *Query) ExecWrite(db *sqlx.DB) (sql.Result, error) {
-	sql, vars := q.GetSQL()
+	sql, vars := q.GetFullSQL()
 
 	if debugEnabled {
 		marshaled, _ := json.Marshal(vars)
@@ -126,7 +143,7 @@ func (q *Query) ExecWrite(db *sqlx.DB) (sql.Result, error) {
 
 // Execute a read query (SELECT) on a given SQL database
 func (q *Query) ExecRead(db *sqlx.DB) (*sqlx.Rows, error) {
-	sql, vars := q.GetSQL()
+	sql, vars := q.GetFullSQL()
 
 	if debugEnabled {
 		marshaled, _ := json.Marshal(vars)
@@ -136,7 +153,7 @@ func (q *Query) ExecRead(db *sqlx.DB) (*sqlx.Rows, error) {
 }
 
 func (q *Query) GetResult(db *sqlx.DB, result interface{}) error {
-	sql, vars := q.GetSQL()
+	sql, vars := q.GetFullSQL()
 
 	if debugEnabled {
 		marshaled, _ := json.Marshal(vars)

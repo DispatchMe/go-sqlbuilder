@@ -13,7 +13,7 @@ func ExampleInsert_struct() {
 		LastName  string `db:"last_name"`
 		Age       int
 	}
-	sql, vars := Insert(&Person{"Testy", "McGee", 25}).Into("people").GetSQL()
+	sql, vars := Insert(&Person{"Testy", "McGee", 25}).Into("people").GetFullSQL()
 
 	fmt.Println(sql, ",", vars)
 }
@@ -21,24 +21,19 @@ func ExampleInsert_struct() {
 func TestInsert(t *testing.T) {
 	person := &Person{10, "Testy", "12345", nil}
 	Convey("insert", t, func() {
-		query, vars := Insert(person).Into("people").Returning(`"id"`).GetSQL()
+		query, vars := Insert(person).Into("people").Returning(`"id"`).GetFullSQL()
 
-		So(len(vars), ShouldEqual, 3)
-
-		// Could be one of three options here...
-
-		options := []string{
-			`INSERT INTO people (id, first_name, Birthday) VALUES ($1, $2, $3) RETURNING "id"`,
-			`INSERT INTO people (id, Birthday, first_name) VALUES ($1, $2, $3) RETURNING "id"`,
-			`INSERT INTO people (first_name, id, Birthday) VALUES ($1, $2, $3) RETURNING "id"`,
-			`INSERT INTO people (first_name, Birthday, id) VALUES ($1, $2, $3) RETURNING "id"`,
-			`INSERT INTO people (Birthday, first_name, id) VALUES ($1, $2, $3) RETURNING "id"`,
-			`INSERT INTO people (Birthday, id, first_name) VALUES ($1, $2, $3) RETURNING "id"`,
-		}
-
-		So(options, ShouldContain, query)
-		So(vars, ShouldContain, 10)
+		// 4th is the "nil" for "pointer"
+		So(len(vars), ShouldEqual, 4)
+		So(query, ShouldStartWith, "INSERT INTO people (")
+		So(query, ShouldContainSubstring, "id")
+		So(query, ShouldContainSubstring, "first_name")
+		So(query, ShouldContainSubstring, "Birthday")
+		So(query, ShouldContainSubstring, "pointer")
+		So(query, ShouldEndWith, `RETURNING "id"`)
+		So(vars, ShouldContain, int64(10))
 		So(vars, ShouldContain, "Testy")
 		So(vars, ShouldContain, "12345")
+		So(vars, ShouldContain, (*int)(nil))
 	})
 }

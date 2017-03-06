@@ -10,11 +10,11 @@ type constraint struct {
 	expr     SQLProvider
 }
 
-func (c *constraint) getSQL(cache *varCache) string {
+func (c *constraint) GetSQL(cache *VarCache) string {
 	if len(c.children) > 0 {
 		compiled := make([]string, len(c.children))
 		for i, cstr := range c.children {
-			compiled[i] = cstr.getSQL(cache)
+			compiled[i] = cstr.GetSQL(cache)
 		}
 
 		var gate string
@@ -33,7 +33,7 @@ func (c *constraint) getSQL(cache *varCache) string {
 
 		return prefix + strings.Join(compiled, gate) + suffix
 	} else {
-		return c.expr.getSQL(cache)
+		return c.expr.GetSQL(cache)
 	}
 }
 

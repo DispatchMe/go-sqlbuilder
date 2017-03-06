@@ -10,13 +10,13 @@ const DESC = false
 
 type groups []string
 
-func (g groups) getSQL(cache *varCache) string {
+func (g groups) GetSQL(cache *VarCache) string {
 	return "GROUP BY " + strings.Join(g, ", ")
 }
 
 type ordering []*order
 
-func (o ordering) getSQL(cache *varCache) string {
+func (o ordering) GetSQL(cache *VarCache) string {
 	sql := make([]string, len(o))
 
 	var dir string
@@ -37,9 +37,16 @@ type order struct {
 	asc        bool
 }
 
-func (q *Query) getSelectSQL(cache *varCache) string {
-	components := []string{"SELECT " + strings.Join(q.fields, ", ") + " FROM"}
+func (q *Query) getCountSQL(cache *VarCache) string {
+	return q.getSelectSQLWithSelectComponent("SELECT COUNT(*) FROM", cache)
+}
 
+func (q *Query) getSelectSQL(cache *VarCache) string {
+	return q.getSelectSQLWithSelectComponent("SELECT "+strings.Join(q.fields, ", ")+" FROM", cache)
+}
+
+func (q *Query) getSelectSQLWithSelectComponent(selectComponent string, cache *VarCache) string {
+	components := []string{selectComponent}
 	common := q.getCommonQueryComponents(cache)
 
 	order := []string{"from", "join", "where", "groupBy", "having", "orderBy", "limit", "offset"}
@@ -53,7 +60,7 @@ func (q *Query) getSelectSQL(cache *varCache) string {
 	return strings.Join(components, " ")
 }
 
-func (q *Query) getCommonQueryComponents(cache *varCache) map[string]string {
+func (q *Query) getCommonQueryComponents(cache *VarCache) map[string]string {
 	mp := make(map[string]string)
 
 	fromTables := []string{}
@@ -61,9 +68,9 @@ func (q *Query) getCommonQueryComponents(cache *varCache) map[string]string {
 
 	for _, t := range q.tables {
 		if t.joinType == join_none {
-			fromTables = append(fromTables, t.getSQL(cache))
+			fromTables = append(fromTables, t.GetSQL(cache))
 		} else {
-			joinTables = append(joinTables, t.getSQL(cache))
+			joinTables = append(joinTables, t.GetSQL(cache))
 		}
 	}
 
@@ -75,22 +82,22 @@ func (q *Query) getCommonQueryComponents(cache *varCache) map[string]string {
 
 	// Where?
 	if q.where != nil {
-		mp["where"] = "WHERE " + q.where.getSQL(cache)
+		mp["where"] = "WHERE " + q.where.GetSQL(cache)
 	}
 
 	// Group?
 	if len(q.groups) > 0 {
-		mp["groupBy"] = q.groups.getSQL(cache)
+		mp["groupBy"] = q.groups.GetSQL(cache)
 	}
 
 	// Having?
 	if q.having != nil {
-		mp["having"] = "HAVING " + q.having.getSQL(cache)
+		mp["having"] = "HAVING " + q.having.GetSQL(cache)
 	}
 
 	// Order?
 	if len(q.ordering) > 0 {
-		mp["orderBy"] = q.ordering.getSQL(cache)
+		mp["orderBy"] = q.ordering.GetSQL(cache)
 	}
 
 	// Limit?
@@ -120,6 +127,13 @@ func (q *Query) Select(fields ...string) *Query {
 	return q
 }
 
+// In case you got a query from another package or component but want
+// to change the selected fields
+func (q *Query) ResetFields() *Query {
+	q.fields = []string{}
+	return q
+}
+
 // Alias a subquery with a certain name. Useful when you want to do something like SELECT a.column FROM (SELECT ....) a
 func Alias(subquery *Query, name string) SQLProvider {
 	return &alias{subquery, name}
@@ -130,8 +144,8 @@ type alias struct {
 	name  string
 }
 
-func (a *alias) getSQL(cache *varCache) string {
-	return "(" + a.query.getSQL(cache) + ") " + a.name
+func (a *alias) GetSQL(cache *VarCache) string {
+	return "(" + a.query.GetSQL(cache) + ") " + a.name
 }
 
 // Add a table to SELECT from. Run this multiple times for multiple tables
@@ -159,11 +173,11 @@ func Union(subQuery ...SQLProvider) *Query {
 	return q
 }
 
-func (q *Query) getUnionSQL(cache *varCache) string {
+func (q *Query) getUnionSQL(cache *VarCache) string {
 	queries := make([]string, len(q.unions))
 
 	for i, u := range q.unions {
-		queries[i] = "(" + u.getSQL(cache) + ")"
+		queries[i] = "(" + u.GetSQL(cache) + ")"
 	}
 
 	return strings.Join(queries, " UNION ")

@@ -26,8 +26,8 @@ func (sc *SingleCase) Then(clause SQLProvider) SQLProvider {
 	return sc
 }
 
-func (sc *SingleCase) getSQL(cache *varCache) string {
-	return "WHEN " + sc.when.getSQL(cache) + " THEN " + sc.then.getSQL(cache)
+func (sc *SingleCase) GetSQL(cache *VarCache) string {
+	return "WHEN " + sc.when.GetSQL(cache) + " THEN " + sc.then.GetSQL(cache)
 }
 
 type elseClause struct {
@@ -38,19 +38,19 @@ func Else(clause SQLProvider) SQLProvider {
 	return &elseClause{clause}
 }
 
-func (e *elseClause) getSQL(cache *varCache) string {
-	return "ELSE " + e.clause.getSQL(cache)
+func (e *elseClause) GetSQL(cache *VarCache) string {
+	return "ELSE " + e.clause.GetSQL(cache)
 }
 
 func Case(clauses ...SQLProvider) SQLProvider {
 	return &caseClause{clauses}
 }
 
-func (c *caseClause) getSQL(cache *varCache) string {
+func (c *caseClause) GetSQL(cache *VarCache) string {
 	clauses := make([]string, len(c.clauses))
 
 	for i, clause := range c.clauses {
-		clauses[i] = clause.getSQL(cache)
+		clauses[i] = clause.GetSQL(cache)
 	}
 
 	return "(CASE " + strings.Join(clauses, " ") + " END)"

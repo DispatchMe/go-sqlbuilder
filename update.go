@@ -27,7 +27,7 @@ func (q *Query) Set(data interface{}) *Query {
 	return q
 }
 
-func (q *Query) getUpdateSQL(cache *varCache) string {
+func (q *Query) getUpdateSQL(cache *VarCache) string {
 
 	clauses := make([]string, len(q.data))
 	i := 0

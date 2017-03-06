@@ -12,11 +12,11 @@ type table struct {
 	subQuery        SQLProvider
 }
 
-func (t *table) getSQL(cache *varCache) string {
+func (t *table) GetSQL(cache *VarCache) string {
 
 	if t.joinType == join_none {
 		if t.subQuery != nil {
-			return t.subQuery.getSQL(cache)
+			return t.subQuery.GetSQL(cache)
 		}
 		return t.name
 	}
@@ -26,7 +26,7 @@ func (t *table) getSQL(cache *varCache) string {
 	ons := make([]string, len(t.joinConstraints))
 
 	for i, c := range t.joinConstraints {
-		ons[i] = c.getSQL(cache)
+		ons[i] = c.GetSQL(cache)
 	}
 
 	return fmt.Sprintf("%s JOIN %s ON %s", joinType, t.name, strings.Join(ons, " AND "))

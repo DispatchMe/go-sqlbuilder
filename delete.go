@@ -12,7 +12,7 @@ func Delete() *Query {
 	return query
 }
 
-func (q *Query) getDeleteSQL(cache *varCache) string {
+func (q *Query) getDeleteSQL(cache *VarCache) string {
 	components := []string{"DELETE FROM"}
 
 	common := q.getCommonQueryComponents(cache)

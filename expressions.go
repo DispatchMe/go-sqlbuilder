@@ -1,6 +1,7 @@
 package sqlbuilder
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -11,16 +12,16 @@ type Equal struct {
 	Value interface{}
 }
 
-func getSQLFromInterface(cache *varCache, i interface{}) string {
+func GetSQLFromInterface(cache *VarCache, i interface{}) string {
 	if provider, ok := i.(SQLProvider); ok {
-		return "(" + provider.getSQL(cache) + ")"
+		return "(" + provider.GetSQL(cache) + ")"
 	} else {
 		return cache.add(i)
 	}
 }
 
-func (e Equal) getSQL(cache *varCache) string {
-	return e.Field + " = " + getSQLFromInterface(cache, e.Value)
+func (e Equal) GetSQL(cache *VarCache) string {
+	return e.Field + " = " + GetSQLFromInterface(cache, e.Value)
 }
 
 // "!=" expression. "field != value"
@@ -29,8 +30,8 @@ type NotEqual struct {
 	Value interface{}
 }
 
-func (e NotEqual) getSQL(cache *varCache) string {
-	return e.Field + " != " + getSQLFromInterface(cache, e.Value)
+func (e NotEqual) GetSQL(cache *VarCache) string {
+	return e.Field + " != " + GetSQLFromInterface(cache, e.Value)
 }
 
 // ">" expression. "field > value"
@@ -39,8 +40,8 @@ type GreaterThan struct {
 	Value interface{}
 }
 
-func (e GreaterThan) getSQL(cache *varCache) string {
-	return e.Field + " > " + getSQLFromInterface(cache, e.Value)
+func (e GreaterThan) GetSQL(cache *VarCache) string {
+	return e.Field + " > " + GetSQLFromInterface(cache, e.Value)
 }
 
 // "<" expression. "field < value"
@@ -49,8 +50,8 @@ type LessThan struct {
 	Value interface{}
 }
 
-func (e LessThan) getSQL(cache *varCache) string {
-	return e.Field + " < " + getSQLFromInterface(cache, e.Value)
+func (e LessThan) GetSQL(cache *VarCache) string {
+	return e.Field + " < " + GetSQLFromInterface(cache, e.Value)
 }
 
 // ">=" expression. "field >= value"
@@ -59,8 +60,8 @@ type GreaterOrEqual struct {
 	Value interface{}
 }
 
-func (e GreaterOrEqual) getSQL(cache *varCache) string {
-	return e.Field + " >= " + getSQLFromInterface(cache, e.Value)
+func (e GreaterOrEqual) GetSQL(cache *VarCache) string {
+	return e.Field + " >= " + GetSQLFromInterface(cache, e.Value)
 }
 
 // "<=" expression. "field <= value"
@@ -69,13 +70,13 @@ type LessOrEqual struct {
 	Value interface{}
 }
 
-func (e LessOrEqual) getSQL(cache *varCache) string {
-	return e.Field + " <= " + getSQLFromInterface(cache, e.Value)
+func (e LessOrEqual) GetSQL(cache *VarCache) string {
+	return e.Field + " <= " + GetSQLFromInterface(cache, e.Value)
 }
 
-func getInKeys(val interface{}, cache *varCache) string {
+func getInKeys(val interface{}, cache *VarCache) string {
 	if provider, ok := val.(SQLProvider); ok {
-		return provider.getSQL(cache)
+		return provider.GetSQL(cache)
 	}
 	// Make sure value is a slice
 	t := reflect.TypeOf(val)
@@ -105,7 +106,7 @@ type In struct {
 	Value interface{}
 }
 
-func (e In) getSQL(cache *varCache) string {
+func (e In) GetSQL(cache *VarCache) string {
 	return e.Field + " IN (" + getInKeys(e.Value, cache) + ")"
 }
 
@@ -115,7 +116,7 @@ type NotIn struct {
 	Value interface{}
 }
 
-func (e NotIn) getSQL(cache *varCache) string {
+func (e NotIn) GetSQL(cache *VarCache) string {
 	return e.Field + " NOT IN (" + getInKeys(e.Value, cache) + ")"
 }
 
@@ -125,7 +126,7 @@ type Like struct {
 	Value interface{}
 }
 
-func (e Like) getSQL(cache *varCache) string {
+func (e Like) GetSQL(cache *VarCache) string {
 	return e.Field + " LIKE " + cache.add(e.Value)
 }
 
@@ -134,7 +135,7 @@ type IsNull struct {
 	Field string
 }
 
-func (e IsNull) getSQL(cache *varCache) string {
+func (e IsNull) GetSQL(cache *VarCache) string {
 	return e.Field + " IS NULL"
 }
 
@@ -143,7 +144,7 @@ type IsNotNull struct {
 	Field string
 }
 
-func (e IsNotNull) getSQL(cache *varCache) string {
+func (e IsNotNull) GetSQL(cache *VarCache) string {
 	return e.Field + " IS NOT NULL"
 }
 
@@ -152,6 +153,35 @@ type Raw struct {
 	Expr string
 }
 
-func (e Raw) getSQL(cache *varCache) string {
+func (e Raw) GetSQL(cache *VarCache) string {
 	return e.Expr
+}
+
+type PGOverlap struct {
+	Field string
+	Value []string
+}
+
+func (e PGOverlap) GetSQL(cache *VarCache) string {
+	parsed := make([]string, len(e.Value))
+
+	for idx, item := range e.Value {
+		parsed[idx] = cache.add(item)
+	}
+	return fmt.Sprintf("%s && ARRAY[%s]::varchar[]", e.Field, strings.Join(parsed, ","))
+}
+
+type Expression struct {
+	Format string
+	Values []interface{}
+}
+
+func (e Expression) GetSQL(cache *VarCache) string {
+	parsed := make([]interface{}, len(e.Values))
+
+	for idx, item := range e.Values {
+		parsed[idx] = cache.add(item)
+	}
+
+	return fmt.Sprintf(e.Format, parsed...)
 }

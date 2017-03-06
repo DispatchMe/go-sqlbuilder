@@ -29,25 +29,37 @@ func getData(data interface{}) (map[string]interface{}, error) {
 		}
 		return mp, nil
 	} else if t.Kind() == reflect.Struct {
-		fields := structs.Fields(data)
-
-		for _, f := range fields {
-			tag := f.Tag("db")
-			if strings.Contains(tag, ",") {
-				tag = strings.Split(tag, ",")[0]
-			}
-
-			if tag == "" {
-				tag = f.Name()
-			}
-
-			mp[tag] = f.Value()
-
-		}
+		addStructFieldsToMap(structs.Fields(data), mp)
 		return mp, nil
 
 	} else {
 		return nil, errors.New("Can only insert maps and structs! (got a " + t.Kind().String() + ")")
 	}
+}
 
+func addStructFieldsToMap(fields []*structs.Field, mp map[string]interface{}) {
+	for _, f := range fields {
+		if f.IsEmbedded() {
+			addStructFieldsToMap(f.Fields(), mp)
+		} else {
+			addStructFieldToMap(f, mp)
+		}
+	}
+}
+
+func addStructFieldToMap(field *structs.Field, mp map[string]interface{}) {
+	tag := field.Tag("db")
+	if strings.Contains(tag, ",") {
+		spl := strings.Split(tag, ",")
+		tag = spl[0]
+		if len(spl) > 1 && spl[1] == "omitempty" && field.IsZero() {
+			return
+		}
+	}
+
+	if tag == "" {
+		tag = field.Name()
+	}
+
+	mp[tag] = field.Value()
 }

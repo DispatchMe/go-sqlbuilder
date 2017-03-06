@@ -24,7 +24,7 @@ func ExampleSelect_basic() {
 			GreaterThan{"age", 90},
 			LessThan{"age", 10},
 		),
-	).OrderBy("last_name", ASC).Limit(20).GetSQL()
+	).OrderBy("last_name", ASC).Limit(20).GetFullSQL()
 
 	fmt.Println(sql, ",", vars)
 	// Output: SELECT first_name, last_name FROM people WHERE (gender = $1 AND (age > $2 OR age < $3)) ORDER BY last_name ASC LIMIT 20 , [female 90 10]
@@ -42,7 +42,7 @@ func ExampleSelect_complex() {
 			GreaterThan{"plays.yards", 10},
 			Equal{"plays.scoring", true},
 		),
-	).GroupBy("players.id").Having(GreaterThan{"COUNT(plays)", 5}).OrderBy("playcount", DESC).Limit(10).Offset(50).GetSQL()
+	).GroupBy("players.id").Having(GreaterThan{"COUNT(plays)", 5}).OrderBy("playcount", DESC).Limit(10).Offset(50).GetFullSQL()
 
 	fmt.Println(sql, ",", vars)
 	// Output: SELECT COUNT(plays) AS playcount, players.name FROM players INNER JOIN play_player ON players.id = play_player.player_id INNER JOIN plays ON plays.id = play_player.play_id AND plays.type = $1 WHERE (plays.yards > $2 OR plays.scoring = $3) GROUP BY players.id HAVING COUNT(plays) > $4 ORDER BY playcount DESC LIMIT 10 OFFSET 50 , [running 10 true 5]
@@ -74,7 +74,7 @@ func TestSelect(t *testing.T) {
 	Convey("Select queries", t, func() {
 		for _, p := range params {
 			Convey(p.description, func() {
-				sql, vars := p.query.GetSQL()
+				sql, vars := p.query.GetFullSQL()
 				So(sql, ShouldEqual, p.expected)
 
 				So(len(vars), ShouldEqual, len(p.vars))

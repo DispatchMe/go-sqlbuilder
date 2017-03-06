@@ -29,10 +29,10 @@ func TestExpressions(t *testing.T) {
 		{"Equal to subquery", Equal{"sum", Select("SUM(count)").From("foos")}, "sum = (SELECT SUM(count) FROM foos)", nil},
 	}
 	Convey("Expressions", t, func() {
-		cache := &varCache{}
+		cache := &VarCache{}
 		for _, p := range params {
 			Convey(p.name, func() {
-				sql := p.expr.getSQL(cache)
+				sql := p.expr.GetSQL(cache)
 				So(sql, ShouldEqual, p.expected)
 
 				for i, v := range cache.vars {

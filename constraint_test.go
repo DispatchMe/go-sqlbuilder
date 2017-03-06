@@ -7,7 +7,7 @@ import (
 
 func TestConstraints(t *testing.T) {
 	Convey("Constraints SQL generation", t, func() {
-		cache := &varCache{}
+		cache := &VarCache{}
 
 		Convey("and combined", func() {
 			c := new(constraint)
@@ -15,7 +15,7 @@ func TestConstraints(t *testing.T) {
 
 			c.addChild(Equal{"foo", 10})
 			c.addChild(Equal{"bar", "bar"})
-			sql := c.getSQL(cache)
+			sql := c.GetSQL(cache)
 			So(sql, ShouldEqual, `(foo = $1 AND bar = $2)`)
 			So(len(cache.vars), ShouldEqual, 2)
 			So(cache.vars[0], ShouldEqual, 10)
@@ -29,7 +29,7 @@ func TestConstraints(t *testing.T) {
 			c.addChild(Equal{"foo", 10})
 			c.addChild(Equal{"bar", "bar"})
 
-			sql := c.getSQL(cache)
+			sql := c.GetSQL(cache)
 			So(sql, ShouldEqual, `(foo = $1 OR bar = $2)`)
 			So(len(cache.vars), ShouldEqual, 2)
 			So(cache.vars[0], ShouldEqual, 10)
@@ -51,7 +51,7 @@ func TestConstraints(t *testing.T) {
 				},
 			}
 
-			sql := c.getSQL(cache)
+			sql := c.GetSQL(cache)
 			So(sql, ShouldEqual, `(foo = $1 OR (bar = $2 AND baz = $3))`)
 			So(len(cache.vars), ShouldEqual, 3)
 			So(cache.vars[0], ShouldEqual, 10)

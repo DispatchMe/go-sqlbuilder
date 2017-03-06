@@ -33,7 +33,7 @@ func (q *Query) Returning(expr string) *Query {
 	return q
 }
 
-func (q *Query) getInsertSQL(cache *varCache) string {
+func (q *Query) getInsertSQL(cache *VarCache) string {
 	keys := make([]string, len(q.data))
 
 	fields := make([]string, len(q.data))
