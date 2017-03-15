@@ -38,15 +38,22 @@ type order struct {
 }
 
 func (q *Query) getCountSQL(cache *VarCache) string {
-	return q.getSelectSQLWithSelectComponent("SELECT COUNT(*) FROM", cache)
+	components := []string{"SELECT COUNT(*) FROM"}
+	common := q.getCommonQueryComponents(cache)
+
+	order := []string{"from", "join", "where", "groupBy", "having"}
+
+	for _, o := range order {
+		if val, ok := common[o]; ok {
+			components = append(components, val)
+		}
+	}
+
+	return strings.Join(components, " ")
 }
 
 func (q *Query) getSelectSQL(cache *VarCache) string {
-	return q.getSelectSQLWithSelectComponent("SELECT "+strings.Join(q.fields, ", ")+" FROM", cache)
-}
-
-func (q *Query) getSelectSQLWithSelectComponent(selectComponent string, cache *VarCache) string {
-	components := []string{selectComponent}
+	components := []string{"SELECT " + strings.Join(q.fields, ", ") + " FROM"}
 	common := q.getCommonQueryComponents(cache)
 
 	order := []string{"from", "join", "where", "groupBy", "having", "orderBy", "limit", "offset"}
