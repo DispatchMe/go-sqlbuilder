@@ -25,14 +25,14 @@ func TestUpdate(t *testing.T) {
 	}
 
 	Convey("update", t, func() {
-		query, vars := Update("people").Set(data).Where(Equal{"id", 100}).Limit(1).GetFullSQL()
+		query, vars := Update("people").Set(data).Where(Equal{"id", 100}).Limit(1).Returning("id").GetFullSQL()
 
 		So(len(vars), ShouldEqual, 3)
 		// Problem here is map output is random, so we need to allow for both possibilities
-		if query == "UPDATE people SET foo=$1, baz=$2 WHERE id = $3 LIMIT 1" {
+		if query == "UPDATE people SET foo=$1, baz=$2 WHERE id = $3 LIMIT 1 RETURNING id" {
 			So(vars[0], ShouldEqual, "bar")
 			So(vars[1], ShouldEqual, 10)
-		} else if query == "UPDATE people SET baz=$1, foo=$2 WHERE id = $3 LIMIT 1" {
+		} else if query == "UPDATE people SET baz=$1, foo=$2 WHERE id = $3 LIMIT 1 RETURNING id" {
 			So(vars[0], ShouldEqual, 10)
 			So(vars[1], ShouldEqual, "bar")
 		} else {

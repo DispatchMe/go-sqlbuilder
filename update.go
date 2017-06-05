@@ -43,7 +43,7 @@ func (q *Query) getUpdateSQL(cache *VarCache) string {
 
 	common["set"] = "SET " + strings.Join(clauses, ", ")
 
-	order := []string{"from", "join", "set", "where", "groupBy", "having", "orderBy", "limit", "offset"}
+	order := []string{"from", "join", "set", "where", "groupBy", "having", "orderBy", "limit", "offset", "returning"}
 
 	for _, o := range order {
 		if val, ok := common[o]; ok {

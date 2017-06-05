@@ -117,6 +117,11 @@ func (q *Query) getCommonQueryComponents(cache *VarCache) map[string]string {
 		mp["offset"] = fmt.Sprintf("OFFSET %d", q.offset)
 	}
 
+	// Returning?
+	if q.returning != "" {
+		mp["returning"] = fmt.Sprintf("RETURNING %s", q.returning)
+	}
+
 	return mp
 }
 
