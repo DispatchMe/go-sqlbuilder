@@ -4,7 +4,7 @@ package sqlbuilder_test
 
 import (
 	"fmt"
-	. "github.com/jraede/go-sqlbuilder"
+	. "github.com/DispatchMe/go-sqlbuilder"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )

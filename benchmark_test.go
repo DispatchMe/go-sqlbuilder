@@ -1,7 +1,7 @@
 package sqlbuilder_test
 
 import (
-	. "github.com/jraede/go-sqlbuilder"
+	. "github.com/DispatchMe/go-sqlbuilder"
 	"testing"
 )
 
