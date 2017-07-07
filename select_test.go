@@ -54,6 +54,7 @@ func TestSelect(t *testing.T) {
 		{"simple", Select("*").From("foos"), "SELECT * FROM foos", nil},
 		{"simple where", Select("a", "b", "c").From("foos").Where(Equal{"a", 10}), "SELECT a, b, c FROM foos WHERE a = $1", []interface{}{10}},
 		{"complex where", Select("*").From("stats").Where(LessThan{"rushing_attempts", 10}, Or(GreaterThan{"rushing_yards", 100}, GreaterThan{"rushing_tds", 0})), "SELECT * FROM stats WHERE (rushing_attempts < $1 AND (rushing_yards > $2 OR rushing_tds > $3))", []interface{}{10, 100, 0}},
+		{"placeholder", Select("a", "b", "c").Placeholder("?").From("foos").Where(Equal{"a", 10}), "SELECT a, b, c FROM foos WHERE a = ?", []interface{}{10}},
 		{"ordering", Select("a").From("foos").OrderBy("a.timestamp", DESC), "SELECT a FROM foos ORDER BY a.timestamp DESC", nil},
 		{"multiple ordering", Select("a").From("foos").OrderBy("a.category", DESC).OrderBy("a.timestamp", ASC), "SELECT a FROM foos ORDER BY a.category DESC, a.timestamp ASC", nil},
 		{"group by", Select("SUM(a.price)").From("foos").GroupBy("a.category"), "SELECT SUM(a.price) FROM foos GROUP BY a.category", nil},

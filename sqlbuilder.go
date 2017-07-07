@@ -39,19 +39,20 @@ const (
 )
 
 type Query struct {
-	action    int
-	fields    []string
-	tables    []*table
-	cache     *VarCache
-	having    *constraint
-	where     *constraint
-	groups    groups
-	ordering  ordering
-	data      map[string]interface{}
-	limit     int
-	offset    int
-	returning string
-	unions    []SQLProvider
+	action      int
+	fields      []string
+	tables      []*table
+	cache       *VarCache
+	having      *constraint
+	where       *constraint
+	groups      groups
+	ordering    ordering
+	data        map[string]interface{}
+	limit       int
+	offset      int
+	placeholder string
+	returning   string
+	unions      []SQLProvider
 }
 
 type SQLProvider interface {
@@ -59,11 +60,15 @@ type SQLProvider interface {
 }
 
 type VarCache struct {
-	vars []interface{}
+	placeholder string
+	vars        []interface{}
 }
 
 func (v *VarCache) add(val interface{}) string {
 	v.vars = append(v.vars, val)
+	if v.placeholder != "" {
+		return v.placeholder
+	}
 	return fmt.Sprintf("$%d", len(v.vars))
 }
 
@@ -82,6 +87,12 @@ func (q *Query) Offset(offset int) *Query {
 	return q
 }
 
+// Change the prepared statement placeholder (the question mark in this example) (INSERT INTO _ (?, ?, ?) VALUES())
+func (q *Query) Placeholder(placeholder string) *Query {
+	q.placeholder = placeholder
+	return q
+}
+
 func newQuery() *Query {
 	q := new(Query)
 	q.cache = new(VarCache)
@@ -90,7 +101,9 @@ func newQuery() *Query {
 
 // Generate the SQL for this query. Returns the generated SQL (string), and a slice of arbitrary values to pass to sql.DB.Exec or sql.DB.Query
 func (q *Query) GetFullSQL() (string, []interface{}) {
-	cache := &VarCache{}
+	cache := &VarCache{
+		placeholder: q.placeholder,
+	}
 	return q.GetSQL(cache), cache.vars
 }
 
