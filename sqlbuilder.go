@@ -38,6 +38,8 @@ const (
 	action_count  = iota
 )
 
+type PlaceholderFunction func(index int) string
+
 type Query struct {
 	action      int
 	fields      []string
@@ -50,7 +52,7 @@ type Query struct {
 	data        map[string]interface{}
 	limit       int
 	offset      int
-	placeholder string
+	placeholder PlaceholderFunction
 	returning   string
 	unions      []SQLProvider
 }
@@ -60,14 +62,14 @@ type SQLProvider interface {
 }
 
 type VarCache struct {
-	placeholder string
+	placeholder PlaceholderFunction
 	vars        []interface{}
 }
 
 func (v *VarCache) add(val interface{}) string {
 	v.vars = append(v.vars, val)
-	if v.placeholder != "" {
-		return v.placeholder
+	if v.placeholder != nil {
+		return v.placeholder(len(v.vars))
 	}
 	return fmt.Sprintf("$%d", len(v.vars))
 }
@@ -88,7 +90,7 @@ func (q *Query) Offset(offset int) *Query {
 }
 
 // Change the prepared statement placeholder (the question mark in this example) (INSERT INTO _ (?, ?, ?) VALUES())
-func (q *Query) Placeholder(placeholder string) *Query {
+func (q *Query) Placeholder(placeholder PlaceholderFunction) *Query {
 	q.placeholder = placeholder
 	return q
 }
