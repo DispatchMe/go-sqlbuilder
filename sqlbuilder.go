@@ -6,10 +6,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	sqlx "github.com/jmoiron/sqlx"
-	"github.com/visionmedia/go-debug"
 	"os"
 	"strings"
+
+	"github.com/DispatchMe/go-debug"
+	sqlx "github.com/jmoiron/sqlx"
 )
 
 var debugEnabled = strings.Contains(os.Getenv("DEBUG"), "sql")

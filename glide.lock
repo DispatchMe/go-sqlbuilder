@@ -1,21 +1,19 @@
-hash: 2779e524523cbdad842b4b72c9a43389ef8613fa6f5a05c40465805852a9c9eb
-updated: 2017-07-07T12:25:27.983527452-04:00
+hash: 675ae284daca4a151c6f17df06a2a9b3967c3c4f27a24b39c9ffa967cdf7f130
+updated: 2018-01-02T15:21:14.597314-05:00
 imports:
+- name: github.com/DispatchMe/go-debug
+  version: 6213e8563230022bdfc1e3456e6da91d8419ceee
 - name: github.com/fatih/structs
   version: a720dfa8df582c51dee1b36feabb906bde1588bd
 - name: github.com/jmoiron/sqlx
   version: 05b81a7d5d38058e42148dc01f17daf4acba4640
   subpackages:
   - reflectx
-- name: github.com/visionmedia/go-debug
-  version: ff4a55a20a86994118644bbddc6a216da193cc13
 testImports:
 - name: github.com/gopherjs/gopherjs
   version: 2b1d432c8a82c9bff0b0baffaeb3ec6e92974112
   subpackages:
   - js
-- name: github.com/jraede/go-sqlbuilder
-  version: b7075c1004b3289b00872e11ea2fded85c1f7424
 - name: github.com/jtolds/gls
   version: 77f18212c9c7edc9bd6a33d383a7b545ce62f064
 - name: github.com/smartystreets/assertions
@@ -24,7 +22,7 @@ testImports:
   - internal/go-render/render
   - internal/oglematchers
 - name: github.com/smartystreets/goconvey
-  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1
+  version: 9e8dc3f972df6c8fcc0375ef492c24d0bb204857
   subpackages:
   - convey
   - convey/gotest
