@@ -1,0 +1,6 @@
+github.com/DispatchMe/go-debug v2.1.0+incompatible h1:F9bVZIIvUIybMZDNkiUbHJDOINBva2rW8D4QhTZbyio=
+github.com/DispatchMe/go-debug v2.1.0+incompatible/go.mod h1:gcouKmR09oMsvmnRRrdVB6irJajyAQqiE7swRuvxnXk=
+github.com/fatih/structs v1.0.0 h1:BrX964Rv5uQ3wwS+KRUAJCBBw5PQmgJfJ6v4yly5QwU=
+github.com/fatih/structs v1.0.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
+github.com/jmoiron/sqlx v0.0.0-20160914234533-05b81a7d5d38 h1:7kim0vInmpAiuPVlMzm0FaBH1rxdKXagff5wtNmbMr0=
+github.com/jmoiron/sqlx v0.0.0-20160914234533-05b81a7d5d38/go.mod h1:IiEW3SEiiErVyFdH8NTuWjSifiEQKUoyK3LNqr2kCHU=
